@@ -5,7 +5,7 @@
 typedef struct {
 	int rows;
 	int columns;
-	int **array;
+	float **array;
 } Matriz;
 
 Matriz ler_matriz(char c){
@@ -16,14 +16,14 @@ Matriz ler_matriz(char c){
 	scanf("%i %i", &matriz.rows, &matriz.columns);
 	
 	printf("Insira a matriz %c\n", c);
-	matriz.array = (int**)malloc(matriz.rows * sizeof(int*));
+	matriz.array = (float**)malloc(matriz.rows * sizeof(float*));
 	for(int i = 0; i < matriz.rows; i++)
 	{
-		matriz.array[i] = (int*)calloc(matriz.columns, sizeof(int));
+		matriz.array[i] = (float*)calloc(matriz.columns, sizeof(float));
 
 		for(int j = 0; j < matriz.columns; j++)
 		{
-			scanf("%i", &matriz.array[i][j]);
+			scanf("%f", &matriz.array[i][j]);
 		}
 	}
 	printf("\n");
@@ -37,17 +37,36 @@ Matriz matriz_vazia(int rows, int columns){
 	matriz.rows = rows;
 	matriz.columns = columns;
 
-	matriz.array = (int**)malloc(matriz.rows * sizeof(int*));
+	matriz.array = (float**)malloc(matriz.rows * sizeof(float*));
 	for(int i = 0; i < matriz.rows; i++)
 	{
-		matriz.array[i] = (int*)calloc(matriz.columns, sizeof(int));
+		matriz.array[i] = (float*)calloc(matriz.columns, sizeof(float));
 	}
 
 
 	return matriz;
 }
 
-void multiplicar(Matriz matriz_A, Matriz matriz_B, int** result)
+Matriz matriz_de_numero(int rows, int columns, float number){
+
+	Matriz matriz;
+	matriz.rows = rows;
+	matriz.columns = columns;
+
+	matriz.array = (float**)malloc(matriz.rows * sizeof(float*));
+	for(int i = 0; i < matriz.rows; i++)
+	{
+		matriz.array[i] = (float*)calloc(matriz.columns, sizeof(float));
+		
+		for(int j = 0; j < matriz.columns; j++){
+			matriz.array[i][j] = number;
+		}	
+	}
+
+	return matriz;
+}
+
+void multiplicar(Matriz matriz_A, Matriz matriz_B, float** result)
 {
 	for(int i = 0; i < matriz_A.rows; i ++)
 	{
@@ -61,21 +80,47 @@ void multiplicar(Matriz matriz_A, Matriz matriz_B, int** result)
 	}
 }
 
-int main(void){
+int main(int argc, char *argv[]){
 	
 	printf("AA de Arquitetura de Computadores 1 \n");
 	printf("Multiplicação de matrizes de forma ESCALAR \n\n");
 
 
-	Matriz matriz_A = ler_matriz('A');
-	Matriz matriz_B = ler_matriz('B');
+	Matriz matriz_A; 
+	Matriz matriz_B;
+
+	int rowsArg;
+	int columnsArg;
+	int numberArg;
+
+	char url[]="saida.txt";
+	FILE *arq;
+	arq = fopen(url, "w");
+	if(arq == NULL)
+			printf("Erro, nao foi possivel abrir o arquivo\n");
+	
+	if(argc == 1){
+		matriz_A = ler_matriz('A');
+		matriz_B = ler_matriz('B');
+	}
+	else if(argc == 4){
+		rowsArg = atoi(argv[1]);
+		columnsArg = atoi(argv[2]);
+		numberArg = atoi(argv[3]);
+		
+		matriz_A = matriz_de_numero(rowsArg, columnsArg, numberArg);
+		matriz_B = matriz_de_numero(rowsArg, columnsArg, numberArg);
+	}
+	else{
+		printf("Argumentos inválidos.\n");
+		printf("Use no formato [rows, columns, number].\n");
+		return 0;
+	}
 
 	clock_t c2, c1; /* variáveis que contam ciclos do processador */
-
 	c1 = clock();
 
-	Matriz matriz_C; 
-		
+	Matriz matriz_C; 	
 	if(matriz_A.rows == matriz_B.columns){
 
 		matriz_C = matriz_vazia(matriz_B.rows, matriz_A.columns);
@@ -90,7 +135,7 @@ int main(void){
 	}
 	else{
 
-		printf("Não é possível executar multiplicação com as matrizes passadas!\n");
+		printf("Não é possível executar multiplicação com as matrizes inseridas!\n");
 		return 0;
 	}
 
@@ -102,20 +147,35 @@ int main(void){
 	}*/
 	
 	c2 = clock();
-	double tempo = (c2 - c1) * 1000/CLOCKS_PER_SEC;
-	
+	double tempo = (c2 - c1) * 1000.0/CLOCKS_PER_SEC;
+	printf("\nTempo: %lf ms.\n", tempo);
 
-	printf("Matriz C resultante: \n");
-	for(int i = 0; i < matriz_C.rows; i++)
+	if(argc == 1)
 	{
-		for(int j = 0; j < matriz_C.columns; j++)
+		printf("Matriz C resultante: \n");
+		for(int i = 0; i < matriz_C.rows; i++)
 		{
-			printf("%i ", matriz_C.array[i][j]);
-		}
-		printf("\n");
-	} 
+			for(int j = 0; j < matriz_C.columns; j++)
+			{
+				printf("%.3f ", matriz_C.array[i][j]);
+			}
+			printf("\n");
+		} 
+	}
+	else if(argc == 4)
+	{
+		printf("Resultando no arquivo de saida!\n");
+		fprintf(arq, "Matriz C resultante: %ix%i\n", rowsArg, columnsArg);
+		for(int i = 0; i < matriz_C.rows; i++)
+		{
+			for(int j = 0; j < matriz_C.columns; j++)
+			{
+				fprintf(arq, "%.3f ", matriz_C.array[i][j]);
+			}
+			fprintf(arq, "\n");
+		} 
+	}
 
-	printf("Tempo: %lf \n", tempo);
 
 	return 0;
 }
