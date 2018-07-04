@@ -66,32 +66,58 @@ Matriz matriz_de_numero(int rows, int columns, float number){
 	return matriz;
 }
 
-void multiplicar(Matriz matriz_A, Matriz matriz_B, float** result)
+Matriz matriz_identidade(int rows, int columns){
+
+	Matriz matriz;
+	matriz.rows = rows;
+	matriz.columns = columns;
+
+	matriz.array = (float**)malloc(matriz.rows * sizeof(float*));
+	for(int i = 0; i < matriz.rows; i++)
+	{
+		matriz.array[i] = (float*)calloc(matriz.columns, sizeof(float));
+		
+		for(int j = 0; j < matriz.columns; j++){
+			matriz.array[i][j] = 0;
+
+			if(i == j)
+				matriz.array[i][j] = 1;
+		}	
+	}
+
+	return matriz;
+}
+
+int conferir_matriz_identidade(Matriz matriz_A)
 {
 	for(int i = 0; i < matriz_A.rows; i ++)
 	{
-		for(int j = 0; j < matriz_B.columns; j++)
+		for(int j = 0; j < matriz_A.columns; j++)
 		{
-			for(int k = 0; k < matriz_A.columns; k++)
-			{
-				result[i][j] += matriz_A.array[i][k] * matriz_B.array[k][j];
+			if(i == j){
+				if(matriz_A.array[i][j] != 1)
+					return 0;
+			}
+			else{
+				if(matriz_A.array[i][j] != 0)
+					return 0;
 			}
 		}
 	}
+
+	return 1;
 }
 
 int main(int argc, char *argv[]){
 	
 	printf("AA de Arquitetura de Computadores 1 \n");
-	printf("Multiplicação de matrizes de forma ESCALAR \n\n");
+	printf("Descobrir se uma matriz é identidade ou não de forma escalar\n\n");
 
-
-	Matriz matriz_A; 
-	Matriz matriz_B;
+	Matriz matriz_A;
 
 	int rowsArg;
 	int columnsArg;
-	int numberArg;
+	int ehIdentidade;
 
 	char url[]="saida.txt";
 	FILE *arq;
@@ -101,41 +127,35 @@ int main(int argc, char *argv[]){
 	
 	if(argc == 1){
 		matriz_A = ler_matriz('A');
-		matriz_B = ler_matriz('B');
 	}
 	else if(argc == 4){
 		rowsArg = atoi(argv[1]);
 		columnsArg = atoi(argv[2]);
-		numberArg = atoi(argv[3]);
+		ehIdentidade = atoi(argv[3]);
 		
-		matriz_A = matriz_de_numero(rowsArg, columnsArg, numberArg);
-		matriz_B = matriz_de_numero(rowsArg, columnsArg, numberArg);
+		if(ehIdentidade == 1)
+			matriz_A = matriz_identidade(rowsArg, columnsArg);
+		else
+			matriz_A = matriz_de_numero(rowsArg, columnsArg, 3);
 	}
 	else{
 		printf("Argumentos inválidos.\n");
-		printf("Use no formato [rows, columns, number].\n");
+		printf("Use no formato [rows, columns, identidade(1 = sim 0 = nao)].\n");
 		return 0;
 	}
 
 	clock_t c2, c1; /* variáveis que contam ciclos do processador */
 	c1 = clock();
 
-	Matriz matriz_C; 	
-	if(matriz_A.rows == matriz_B.columns){
+	int resultado; 	
+	if(matriz_A.rows == matriz_A.columns){
 
-		matriz_C = matriz_vazia(matriz_B.rows, matriz_A.columns);
-
-		multiplicar(matriz_B, matriz_A, matriz_C.array);
-	}
-	else if(matriz_B.rows == matriz_A.columns){
-
-		matriz_C = matriz_vazia(matriz_A.rows, matriz_B.columns);
-
-		multiplicar(matriz_A, matriz_B, matriz_C.array);
+		resultado = conferir_matriz_identidade(matriz_A);
+		
 	}
 	else{
 
-		printf("Não é possível executar multiplicação com as matrizes inseridas!\n");
+		printf("A matriz precisa ser quadrada!\n");
 		return 0;
 	}
 
@@ -152,25 +172,25 @@ int main(int argc, char *argv[]){
 
 	if(argc == 1)
 	{
-		printf("Matriz C resultante: \n");
-		for(int i = 0; i < matriz_C.rows; i++)
-		{
-			for(int j = 0; j < matriz_C.columns; j++)
-			{
-				printf("%.f ", matriz_C.array[i][j]);
-			}
-			printf("\n");
-		} 
+		if(resultado == 1)
+			printf("A matriz inserida é identidade.\n");
+		else
+			printf("A matriz inserida NÃO é identidade.\n");
 	}
 	else if(argc == 4)
 	{
-		printf("Resultando no arquivo de saida!\n");
-		fprintf(arq, "Matriz C resultante: %ix%i\n", rowsArg, columnsArg);
-		for(int i = 0; i < matriz_C.rows; i++)
+		if(resultado == 1)
+			printf("A matriz inserida é identidade.\n");
+		else
+			printf("A matriz inserida NÃO é identidade.\n");
+
+		printf("OBS: A matriz inserida está no arquivo de saida!\n");
+		fprintf(arq, "Matriz A: %ix%i\n", rowsArg, columnsArg);
+		for(int i = 0; i < matriz_A.rows; i++)
 		{
-			for(int j = 0; j < matriz_C.columns; j++)
+			for(int j = 0; j < matriz_A.columns; j++)
 			{
-				fprintf(arq, "%.f ", matriz_C.array[i][j]);
+				fprintf(arq, "%.f ", matriz_A.array[i][j]);
 			}
 			fprintf(arq, "\n");
 		} 

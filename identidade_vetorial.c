@@ -8,8 +8,6 @@
 #include <emmintrin.h>
 #include <x86intrin.h>
 
-// PARA COMPILAR! -msse3
-
 typedef struct {
 	int rows;
 	int columns;
@@ -70,6 +68,7 @@ Matriz matriz_vazia(int rows, int columns){
 		matriz.array[i] = (float*)calloc(matriz.columns, sizeof(float));
 	}
 
+
 	return matriz;
 }
 
@@ -97,37 +96,93 @@ Matriz matriz_de_numero(int rows, int columns, float number){
 	return matriz;
 }
 
-//i = linha da matriz A
-//j = coluna da matriz B
-//k = coluna da matriz A / Linha de B
-/***              1   2    3   4
-2 3  3 1  2*3+3*2  2*1+3*4
-1 0  2 4
-4 5  
-*/
+Matriz matriz_identidade(int rows, int columns){
 
-void multiplicar(Matriz matriz_A, Matriz matriz_B, float** result)
-{
+	Matriz matriz;
+	matriz.rows = rows;
+	matriz.columns = columns;
 
-	/* Matriz transposta da matriz B para usar no vetor de inteiros */
-	Matriz matriz = matriz_vazia(matriz_B.transformedColumns, matriz_B.transformedRows);
-	for(int i = 0; i < matriz_B.transformedRows; i++){
-		for(int j = 0; j < matriz_B.transformedColumns; j++){
+	matriz.transformedRows = transform_size(matriz.rows);
+	matriz.transformedColumns = transform_size(matriz.columns);
 
-			matriz.array[i][j] = matriz_B.array[j][i];
-		}
+	matriz.array = (float**)malloc(matriz.transformedRows * sizeof(float*));
+	for(int i = 0; i < matriz.transformedRows; i++)
+	{
+		matriz.array[i] = (float*)calloc(matriz.transformedColumns, sizeof(float));
+		matriz.array[i][i] = 1;
+		
 	}
 
-	float r;
+	return matriz;
+}
+
+int conferir_matriz_identidade(Matriz matriz_A)
+{
 	for(int i = 0; i < matriz_A.rows; i ++)
 	{
-		for(int j = 0; j < matriz_B.columns; j++)
+
+		int k_max = transform_size(matriz_A.columns);
+		for(int j = 0; j < k_max / 4; j++)
 		{
-			float **b = (float**)matriz_B.array;
-			int k_max = transform_size(matriz_A.columns);
-			for(int k = 0; k < k_max / 4; k++)
-			{
-				__m128 *ptr_A = (__m128*)((float*)&(matriz_A.array[i][k*4]));
+
+		
+
+
+			//k=0 					k=4    k=8
+			//i=0,1,2,3, 	   4,5,6,7    8,9,10,11
+			//linha 4 1 0 0 0
+			int k = j * 4;
+			int diff = i - k; //maior que 4 e maior que zero
+
+			if(diff <= 3 && diff >= 0){
+				//conferir um por um
+				int id_prox[] = {0, 0, 0};
+
+				if(diff == 0){
+
+					id_prox[0] = i + 1;
+					id_prox[1] = i + 2;
+					id_prox[2] = i + 3;
+				}
+				else if(diff == 1){
+
+					id_prox[0] = i - 1;
+					id_prox[1] = i + 1;
+					id_prox[2] = i + 2;
+				}
+				else if(diff == 2){
+
+					id_prox[0] = i - 2;
+					id_prox[1] = i - 1;
+					id_prox[2] = i + 1;
+				}
+				else if(diff == 3){
+
+					id_prox[0] = i - 3;
+					id_prox[1] = i - 2;
+					id_prox[2] = i - 1;
+				}
+
+				if(matriz_A.array[i][i] != 1){
+					return 0;
+				}
+
+				for(int y = 0; y < 3; y++){
+					printf("%.f\n", matriz_A.array[i][id_prox[y]]  );
+					if(matriz_A.array[i][id_prox[y]] != 0){
+						return 0;
+					}
+				}
+
+			}
+			else{
+				//conferir uma tacada só
+				__m128 *ptr_A = (__m128*)((float*)&(matriz_A.array[i][k]));
+			}
+
+
+
+			/*__m128 *ptr_A = (__m128*)((float*)&(matriz_A.array[i][k*4]));
 				__m128 *ptr_B = (__m128*)((float*)&(matriz.array[j][k*4]));
 				__m128 ptr_C = _mm_mul_ps((*ptr_A), (*ptr_B));
 
@@ -135,23 +190,33 @@ void multiplicar(Matriz matriz_A, Matriz matriz_B, float** result)
 				ptr_C = _mm_hadd_ps(ptr_C, ptr_C);
 
 				_mm_store_ss((float*)&r, ptr_C);
-				result[i][j] += r;
+				result[i][j] += r; */
+
+
+			/*if(i == j){
+				if(matriz_A.array[i][j] != 1)
+					return 0;
 			}
+			else{
+				if(matriz_A.array[i][j] != 0)
+					return 0;
+			}*/
 		}
 	}
+
+	return 1;
 }
 
 int main(int argc, char *argv[]){
 	
 	printf("AA de Arquitetura de Computadores 1 \n");
-	printf("Multiplicação de matrizes de forma VETORIAL \n\n");
+	printf("Descobrir se uma matriz é identidade ou não de forma escalar\n\n");
 
-	Matriz matriz_A; 
-	Matriz matriz_B;
+	Matriz matriz_A;
 
 	int rowsArg;
 	int columnsArg;
-	int numberArg;
+	int ehIdentidade;
 
 	char url[]="saida.txt";
 	FILE *arq;
@@ -161,73 +226,70 @@ int main(int argc, char *argv[]){
 	
 	if(argc == 1){
 		matriz_A = ler_matriz('A');
-		matriz_B = ler_matriz('B');
 	}
 	else if(argc == 4){
 		rowsArg = atoi(argv[1]);
 		columnsArg = atoi(argv[2]);
-		numberArg = atoi(argv[3]);
+		ehIdentidade = atoi(argv[3]);
 		
-		matriz_A = matriz_de_numero(rowsArg, columnsArg, numberArg);
-		matriz_B = matriz_de_numero(rowsArg, columnsArg, numberArg);
+		if(ehIdentidade == 1)
+			matriz_A = matriz_identidade(rowsArg, columnsArg);
+		else
+			matriz_A = matriz_de_numero(rowsArg, columnsArg, 3);
 	}
 	else{
 		printf("Argumentos inválidos.\n");
-		printf("Use no formato [rows, columns, number].\n");
+		printf("Use no formato [rows, columns, identidade(1 = sim 0 = nao)].\n");
 		return 0;
 	}
 
-	/* variáveis que contam ciclos do processador */
-	clock_t c2, c1; 
+	clock_t c2, c1; /* variáveis que contam ciclos do processador */
 	c1 = clock();
 
+	int resultado; 	
+	if(matriz_A.rows == matriz_A.columns){
 
-	Matriz matriz_C; 
+		resultado = conferir_matriz_identidade(matriz_A);
 		
-	if(matriz_A.rows == matriz_B.columns){
-
-		matriz_C = matriz_vazia(matriz_B.transformedRows, matriz_A.transformedColumns);
-
-		multiplicar(matriz_B, matriz_A, matriz_C.array);
-	}
-	else if(matriz_B.rows == matriz_A.columns){
-
-		matriz_C = matriz_vazia(matriz_A.transformedRows, matriz_B.transformedColumns);
-
-		multiplicar(matriz_A, matriz_B, matriz_C.array);
 	}
 	else{
 
-		printf("Não é possível executar multiplicação com as matrizes inseridas!\n");
+		printf("A matriz precisa ser quadrada!\n");
 		return 0;
 	}
 
 
+	/*for(int i = 0; i < 50000; i++){
+		for(int j = 0; j < 50000; j++){
+
+		}
+	}*/
+	
 	c2 = clock();
 	double tempo = (c2 - c1) * 1000.0/CLOCKS_PER_SEC;
 	printf("\nTempo: %lf ms.\n", tempo);
 
 	if(argc == 1)
 	{
-		printf("Matriz C resultante: \n");
-		for(int i = 0; i < matriz_C.rows; i++)
-		{
-			for(int j = 0; j < matriz_C.columns; j++)
-			{
-				printf("%.f ", matriz_C.array[i][j]);
-			}
-			printf("\n");
-		} 
+		if(resultado == 1)
+			printf("A matriz inserida é identidade.\n");
+		else
+			printf("A matriz inserida NÃO é identidade.\n");
 	}
 	else if(argc == 4)
 	{
-		printf("Resultando no arquivo de saida!\n");
-		fprintf(arq, "Matriz C resultante: %ix%i\n", rowsArg, columnsArg);
-		for(int i = 0; i < matriz_C.rows; i++)
+		if(resultado == 1)
+			printf("A matriz inserida é identidade.\n");
+		else
+			printf("A matriz inserida NÃO é identidade.\n");
+
+		printf("OBS: A matriz inserida está no arquivo de saida!\n");
+		fprintf(arq, "Matriz A: %ix%i\n", rowsArg, columnsArg);
+		for(int i = 0; i < matriz_A.rows; i++)
 		{
-			for(int j = 0; j < matriz_C.columns; j++)
+			for(int j = 0; j < matriz_A.columns; j++)
 			{
-				fprintf(arq, "%.f ", matriz_C.array[i][j]);
+				fprintf(arq, "%.f ", matriz_A.array[i][j]);
 			}
 			fprintf(arq, "\n");
 		} 
@@ -236,22 +298,3 @@ int main(int argc, char *argv[]){
 
 	return 0;
 }
-
-/*int main(void)
-{
-	float a[] = {1.0, 4.0, 9.0, 16.0};
-	__m128 *ptr = (__m128*)a;
-	_mm_store_ps((float*)a, _mm_sqrt_ps(*ptr));
-
-	for(int i = 0; i < 4; i++){
-
-		printf("%f ", a[i]);
-	}
-	printf("\n");
-
-	/*
-	union { __m128 a4; float a[4]; };
-	__m128 a4 = _mm_set_ps( 4.0f, 4.1f, 4.2f, 4.3f );
-
-	return 0;
-} */
