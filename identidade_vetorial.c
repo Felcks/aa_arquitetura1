@@ -189,40 +189,19 @@ int conferir_matriz_identidade(Matriz matriz_A)
 				float r;
 
 				__m128 *ptr_A = (__m128*)((float*)&(matriz_A.array[i][k]));
-				
-
-				*ptr_A = _mm_hadd_ps(*ptr_A, *ptr_A);
-				*ptr_A = _mm_hadd_ps(*ptr_A, *ptr_A);
-
-				_mm_store_ss((float*)&r, *ptr_A);
-				printf("a: %lf\n", r);
-
-				if(r != 0){
-					return 0;
-				}
-			}
-
-
-
-			/*__m128 *ptr_A = (__m128*)((float*)&(matriz_A.array[i][k*4]));
-				__m128 *ptr_B = (__m128*)((float*)&(matriz.array[j][k*4]));
+				__m128 *ptr_B = (__m128*)((float*)&(matriz_A.array[i][k]));
 				__m128 ptr_C = _mm_mul_ps((*ptr_A), (*ptr_B));
 
 				ptr_C = _mm_hadd_ps(ptr_C, ptr_C);
 				ptr_C = _mm_hadd_ps(ptr_C, ptr_C);
 
 				_mm_store_ss((float*)&r, ptr_C);
-				result[i][j] += r; */
+				printf("a: %lf\n", r);
 
-
-			/*if(i == j){
-				if(matriz_A.array[i][j] != 1)
+				if(r != 0){
 					return 0;
+				}
 			}
-			else{
-				if(matriz_A.array[i][j] != 0)
-					return 0;
-			}*/
 		}
 	}
 

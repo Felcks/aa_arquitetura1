@@ -164,7 +164,7 @@ int main(int argc, char *argv[]){
 	}
 	else if(argc == 4)
 	{
-		printf("Resultando no arquivo de saida!\n");
+		/*printf("Resultando no arquivo de saida!\n");
 		fprintf(arq, "Matriz C resultante: %ix%i\n", rowsArg, columnsArg);
 		for(int i = 0; i < matriz_C.rows; i++)
 		{
@@ -173,7 +173,7 @@ int main(int argc, char *argv[]){
 				fprintf(arq, "%.f ", matriz_C.array[i][j]);
 			}
 			fprintf(arq, "\n");
-		} 
+		}*/ 
 	}
 
 
