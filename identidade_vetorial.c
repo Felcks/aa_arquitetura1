@@ -8,6 +8,7 @@
 #include <emmintrin.h>
 #include <x86intrin.h>
 
+
 typedef struct {
 	int rows;
 	int columns;
@@ -15,6 +16,8 @@ typedef struct {
 	int transformedColumns;
 	float **array;
 } Matriz;
+
+Matriz matriz_identidade(int rows, int columns);
 
 int transform_size(int size){
 
@@ -74,7 +77,13 @@ Matriz matriz_vazia(int rows, int columns){
 
 Matriz matriz_de_numero(int rows, int columns, float number){
 
-	Matriz matriz;
+	Matriz matriz = matriz_identidade(rows, columns);
+	//matriz.array[rows-1][columns-1] = number;
+	matriz.array[rows-1][0] = number;
+
+	return matriz;
+	
+	/*Matriz matriz;
 	matriz.rows = rows;
 	matriz.columns = columns;
 
@@ -93,7 +102,7 @@ Matriz matriz_de_numero(int rows, int columns, float number){
 		}
 	}
 
-	return matriz;
+	return matriz;*/
 }
 
 Matriz matriz_identidade(int rows, int columns){
@@ -177,7 +186,20 @@ int conferir_matriz_identidade(Matriz matriz_A)
 			}
 			else{
 				//conferir uma tacada só
+				float r;
+
 				__m128 *ptr_A = (__m128*)((float*)&(matriz_A.array[i][k]));
+				
+
+				*ptr_A = _mm_hadd_ps(*ptr_A, *ptr_A);
+				*ptr_A = _mm_hadd_ps(*ptr_A, *ptr_A);
+
+				_mm_store_ss((float*)&r, *ptr_A);
+				printf("a: %lf\n", r);
+
+				if(r != 0){
+					return 0;
+				}
 			}
 
 
