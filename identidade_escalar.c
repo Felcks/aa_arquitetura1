@@ -111,7 +111,7 @@ int conferir_matriz_identidade(Matriz matriz_A)
 int main(int argc, char *argv[]){
 	
 	printf("AA de Arquitetura de Computadores 1 \n");
-	printf("Descobrir se uma matriz é identidade ou não de forma escalar\n\n");
+	printf("Descobrir se uma matriz é identidade ou não de forma ESCALAR\n\n");
 
 	Matriz matriz_A;
 
@@ -184,7 +184,7 @@ int main(int argc, char *argv[]){
 		else
 			printf("A matriz inserida NÃO é identidade.\n");
 
-		printf("OBS: A matriz inserida está no arquivo de saida!\n");
+		/*printf("OBS: A matriz inserida está no arquivo de saida!\n");
 		fprintf(arq, "Matriz A: %ix%i\n", rowsArg, columnsArg);
 		for(int i = 0; i < matriz_A.rows; i++)
 		{
@@ -193,7 +193,7 @@ int main(int argc, char *argv[]){
 				fprintf(arq, "%.f ", matriz_A.array[i][j]);
 			}
 			fprintf(arq, "\n");
-		} 
+		} */
 	}
 
 
