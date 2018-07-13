@@ -128,78 +128,40 @@ Matriz matriz_identidade(int rows, int columns){
 
 int conferir_matriz_identidade(Matriz matriz_A)
 {
+	int somaDiagonal = 0;
 	for(int i = 0; i < matriz_A.rows; i ++)
 	{
+		somaDiagonal += matriz_A.array[i][i];
 
 		int k_max = transform_size(matriz_A.columns);
 		for(int j = 0; j < k_max / 4; j++)
 		{
-
-		
-
-
-			//k=0 					k=4    k=8
-			//i=0,1,2,3, 	   4,5,6,7    8,9,10,11
-			//linha 4 1 0 0 0
+			float r;
 			int k = j * 4;
-			int diff = i - k; //maior que 4 e maior que zero
 
+			__m128 *ptr_A = (__m128*)((float*)&(matriz_A.array[i][k]));
+			__m128 ptr_C = _mm_hadd_ps(*ptr_A, *ptr_A);
+			ptr_C = _mm_hadd_ps(ptr_C, ptr_C);
+
+			_mm_store_ss((float*)&r, ptr_C);
+			//printf("r= %lf\n", r);
+
+
+			int diff = i - k; 
 			if(diff <= 3 && diff >= 0){
-				//conferir um por um
-				int id_prox[] = {0, 0, 0};
-
-				if(diff == 0){
-
-					id_prox[0] = i + 1;
-					id_prox[1] = i + 2;
-					id_prox[2] = i + 3;
-				}
-				else if(diff == 1){
-
-					id_prox[0] = i - 1;
-					id_prox[1] = i + 1;
-					id_prox[2] = i + 2;
-				}
-				else if(diff == 2){
-
-					id_prox[0] = i - 2;
-					id_prox[1] = i - 1;
-					id_prox[2] = i + 1;
-				}
-				else if(diff == 3){
-
-					id_prox[0] = i - 3;
-					id_prox[1] = i - 2;
-					id_prox[2] = i - 1;
-				}
-
-				if(matriz_A.array[i][i] != 1){
+				
+				if(r != 1)
 					return 0;
-				}
-
-				for(int y = 0; y < 3; y++){
-					//printf("%.f\n", matriz_A.array[i][id_prox[y]]  );
-					if(matriz_A.array[i][id_prox[y]] != 0){
-						return 0;
-					}
-				}
 			}
 			else{
-				float r;
-
-				__m128 *ptr_A = (__m128*)((float*)&(matriz_A.array[i][k]));
-				__m128 ptr_C = _mm_hadd_ps(*ptr_A, *ptr_A);
-				ptr_C = _mm_hadd_ps(ptr_C, ptr_C);
-
-				_mm_store_ss((float*)&r, ptr_C);
-				printf("r= %lf\n", r);
-
-				if(r != 0){
+				if(r != 0)
 					return 0;
-				}
 			}
 		}
 	}
+
+	if(somaDiagonal != matriz_A.rows)
+		return 0;
 
 	return 1;
 }
