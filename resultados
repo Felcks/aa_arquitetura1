@@ -1,17 +1,4 @@
-											SCALAR												
-						MULTIPLICAÇÃO					DIAGONAL
-10X10                  	  0,030000ms    
-100X100					27,000000 ms
-1.000X1.0000			38.000,00000 ms
-10.000X10.000			
-100.000X100.000
-				
-
-
-											VETORIAL												
-						MULTIPLICAÇÃO					DIAGONAL
-10X10                  	0.040000 ms.    
-100X100					16,000000 ms
-1.000X1.0000			15.186,760000 ms.
-10.000X10.000			
-100.000X100.000
+MULTIPLICACAO ESCALAR PC LUCAS
+10  ======= 0.025 MS
+100 ======= 10.554 MS
+1000 ======

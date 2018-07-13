@@ -7,6 +7,7 @@
 #include <xmmintrin.h>
 #include <emmintrin.h>
 #include <x86intrin.h>
+#include <tmmintrin.h>
 
 
 typedef struct {
@@ -182,21 +183,16 @@ int conferir_matriz_identidade(Matriz matriz_A)
 						return 0;
 					}
 				}
-
 			}
 			else{
-				//conferir uma tacada só
 				float r;
 
 				__m128 *ptr_A = (__m128*)((float*)&(matriz_A.array[i][k]));
-				__m128 *ptr_B = (__m128*)((float*)&(matriz_A.array[i][k]));
-				__m128 ptr_C = _mm_mul_ps((*ptr_A), (*ptr_B));
-
-				ptr_C = _mm_hadd_ps(ptr_C, ptr_C);
+				__m128 ptr_C = _mm_hadd_ps(*ptr_A, *ptr_A);
 				ptr_C = _mm_hadd_ps(ptr_C, ptr_C);
 
 				_mm_store_ss((float*)&r, ptr_C);
-				//printf("a: %lf\n", r);
+				printf("r= %lf\n", r);
 
 				if(r != 0){
 					return 0;
